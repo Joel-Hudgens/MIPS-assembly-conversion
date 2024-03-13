@@ -1,0 +1,78 @@
+# Load values from array A[1] and A[0] 
+lw $t1, 4($s0)  # A[1]
+lw $t2, 0($s0)  # A[0]
+
+# Calculate the product of A[1] * A[0]
+mul $t3, $t1, $t2
+# Store high and low 
+mfhi $t4       #HI to $t4
+mflo $t5       #LO to $t5 
+# Store high in A[2]
+sw $t4, 8($s0)  
+# Store the low in A[4]
+sw $t5, 16($s0) 
+# Load value from array A[4] into register $t1
+lw $t1, 16($s0) # A[4]
+
+# Divide A[4] by 230
+addi $t2, $zero, 230
+div $t1, $t2
+# Explicitly define registers for quotient and remainder
+mfhi $t3  # Move contents of HI (remainder) to $t3
+mflo $t1  # Move contents of LO (quotient) to $t1
+# Store the result in A[5]
+sw $t1, 20($s0) # A[5]
+
+#Now, let a = $s1, b = $s2, c = $s3, d = $s4
+#t2 is still 230
+#t3 is A[4]
+# Calculate remainder A[4] % 230
+div $t3, $t2
+# Move remainder to $s1 (a)
+mfhi $s1
+
+#Now assign b to bit-shifted a
+srl $s2, $s1, 16 #shift
+
+#Bitwise comparisons
+andi $t5, $s1, 8 #and left
+ori $t6, $s2, 3 #or right
+or $s3, $t5, $t6 #or results
+
+#left bitshift a by 2, store in d
+sll $s4, $s1, 2
+
+# Concatenate b, c, d into A[6]
+# Using little endian principle
+sb $s2, 27($s0) # b
+sb $s3, 26($s0) # c
+sh $s4, 24($s0) # d
+
+
+#Now operations to find A[3]
+
+# Load A[0] into $t0
+lw $t0, 0($s0)  
+# Load A[1] into $t1
+lw $t1, 4($s0)  
+# Add A[0] / A[1]
+add $t2, $t0, $t1
+# Subtract 100
+ori $t3, $zero, 100     # Load 100 into $t3
+sub $t7, $t2, $t3  # Subtract 100
+
+# Load A[2] into $t1
+lw $t1, 8($s0)  
+# Load A[4] into $t2
+lw $t2, 16($s0)  
+# Load A[5] into $t3
+lw $t3, 20($s0)  
+# Arithmetic
+add $t4, $t1, $t2    # A[2] + A[4]
+sub $t8, $t4, $t3    # (Above result - A[5]
+
+#Now sub two results
+sub $t9, $t7, $t8
+
+#Store result into A[3]
+sw $t9, 12($s0)
