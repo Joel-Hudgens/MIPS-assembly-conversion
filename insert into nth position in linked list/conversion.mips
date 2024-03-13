@@ -1,0 +1,81 @@
+#$s0 = head. holds address of head
+#$s1 = newNode. holds address of newNode
+#$s2  = n. holds number of the node in the list after which node is to be added
+#$s3 = value. holds val(int) of newNode
+
+Main:
+   add $a0,$s0,$zero    #a0 = head
+   add $a1,$s2,$zero    #a1 = n
+   add $a2,$s1,$zero    #a2 = newNode
+   jal addNode
+   
+   add $s3,$s3,$v0      #value = return of addNode
+   j Exit
+   
+ addNode:               #retunrs value of inserted node
+   add $t1,$t1,$zero    #t1 = addr1
+   add $t2,$t2,$zero    #t2 = addr2
+   
+   bne $a1,$zero,notTrue   #if not equal, jump label. Else, do below
+   sw $a0,4($a2)           #newNode->next = head;
+   add $s0,$zero,$a2       #head = newNode
+   lw $t3,0($a2)           #$t3 holds value of newNode
+   add $v0,$t3,$zero       #return (newNode->value)
+   jr $ra
+   
+   notTrue:
+      addi $sp, $sp, -16      #Save arguments and $ra to stack
+      sw $ra, 12($sp)         #Because we will make another function call
+      sw $a0, 8($sp)          #
+      sw $a1, 4($sp)          #
+      sw $a2, 0($sp)          #
+   
+      jal findNode
+      
+      
+      lw $a2, 0($sp)       #Load from stack the correct arguments for this method
+      lw $a1, 4($sp)
+      lw $a0, 8($sp) 
+      lw $ra, 12($sp)
+      addi $sp, $sp, 16
+      
+      add $t1,$zero,$v0    #[addrl, addr2] = findNode (head, n);
+      add $t2,$zero,$v1    #
+      
+      sw $a2,4($t1)        #addr1->next = newNode;
+      sw $t2,4($a2)        #newNode->next = addr2;
+      
+      lw $t3,0($a2)        #$t3 holds value of newNode
+      add $v0,$t3,$zero    #return (newNode->value)
+      
+      jr $ra
+      
+   findNode:
+      add $t5,$a0,$zero          #t5 = curr(starts at head)
+      
+      addi $t6,$t6,1             #let t6 hold i (forloop)
+      forLoop:
+         bge $t6,$a1,endLoop
+         lw $t7,4($t5)           #t7 holds curr.next
+         add $t9,$zero,$t5       #Save curr in case next node is null
+         add $t5,$zero,$t7       #curr(t5) = curr.next(t9)
+         
+         beq $t7,$zero,endLoop   #Break if end of List
+         
+         addi $t6,$t6,1          #increment i
+         j forLoop
+         
+      endLoop:
+      bne $t5,$zero,NotZero   #If next node is null
+      sw $s1,4($t9)           #only save curr.next
+
+      
+      NotZero:
+      add $v0,$t5,$zero          #curr
+      lw $t8,4($t7)
+      add $v1,$t8,$zero              #curr.next
+
+      
+      jr $ra
+      
+Exit:   
