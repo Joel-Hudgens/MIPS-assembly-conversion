@@ -1,0 +1,64 @@
+#Initialize/Define variables
+#$s0 is A[0]
+#$s1 is size of array
+#$s2 is i
+#$s3 is j
+#$s4 is k
+andi $s2, $s2, 0 #i
+andi $s3, $s2, 0 #j
+andi $s4, $s2, 0 #k
+
+
+OuterLoop:
+   bge $s2, $s1, EndOuter   #while (i < size)
+   addi $s3, $s2, 1         #j = i + 1
+   sll $t2, $s2, 2          #Shift 2 bits to add
+   add $t2, $t2, $s0        #add base address to shifted
+
+InnerLoop:
+   bge $s3, $s1, EndInner    #while（j< size）
+   sll $t3, $s3, 2          #Shift 2 bits
+   add $t3, $t3, $s0       #t3 stores curr address of j
+   
+   
+   
+   lw $t4, 0($t2)         #value at i
+   lw $t5, 0($t3)         #value at j
+   beq $t4,$t5, IfTrue    #if(Array[i] == Array[j])
+   jal NotTrue
+   
+   
+   
+   IfTrue: 
+      add $s4, $s3, $zero    #k = j (index)
+      add $t7, $t3, $zero    #k = j (memory address)
+      addi $t6, $s1,-1     #calc size-1 in a temp register
+      
+      
+
+      ForLoop: #for (k = j; k < size-1; k++)
+      bge $s4, $t6, ExitForLoop 
+         
+         
+         lw $t8, 4($t7)          #load val k+1
+         sw $t8, 0($t7)          #store k+1 address into k address
+      
+         addi $s4,$s4,1           #increment k(val)
+         addi $t7, $t7, 4         #increment k(address)
+         j ForLoop
+         
+      
+         ExitForLoop:
+         add $s1, $t6, $zero  #update size
+         j InnerLoop
+   
+   NotTrue:
+   addi $s3,$s3,1 #increment j
+   jal InnerLoop
+
+
+EndInner:
+   addi $s2,$s2,1
+   jal OuterLoop
+
+EndOuter:
