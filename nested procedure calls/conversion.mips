@@ -1,0 +1,65 @@
+#$s0 = A (base address A)
+#$s1 = n (length of A)
+#$s2 = P (base address P)
+#$s3 = k (length of B)
+
+
+
+Main:
+   addi $t0,$t0,1 
+   sw $t0, 0($s2)   #First element in P always 0
+   
+   
+   addi $s4,$s4,1  #index of j
+   add $s5,$s5,$s0   
+   addi $s5,$s5,4 #A[j] location
+   MainFor:
+      bge $s4,$s1,ExitMainFor    #condition
+      add $s3,$s4,$zero          #k=j
+      
+      #args for Power
+      addi $s7,$s5,0  #$s7 holds A[j] location
+      lw $a0,0($s7) #arg1 = A[j]
+      addi $a1,$s4,0  #arg2 = j
+      jal Power
+      addi $t1,$v0,0 #t1 holds the result(pow)
+      
+      #args for newElement
+      addi $a0,$s2,0       #P
+      addi $a1,$s3,0       #k
+      addi $a2,$t1,0       #pow
+      jal newElement
+      
+      addi $s4,$s4,1   #increment j
+      addi $s5,$s5,4   #increment A[j] location
+      j MainFor
+      
+   ExitMainFor:
+      addi $s3,$s3,1  #k++
+      j Exit
+   
+Power:
+   add $t2,$a0,$zero     #pow = a(A[j]) 
+   addi $t3,$zero,1      #$t3 (L) is 1
+   
+   ForLoop:
+      bge $t3,$a1,ExitForLoop       #loop condiion
+      mul $t2,$t2,$a0               #pow=pow*a
+
+      
+      addi $t3,$t3,1  #L++
+      j ForLoop
+      
+   ExitForLoop:
+      addi $v0,$t2,0 #save return val into v register
+      jr $ra
+      
+newElement:
+   addi $t4,$t4,4      
+   add $s6,$a0,$t4    #$s6 holds P[k] location
+   
+   sw $a2,0($s6)
+   jr $ra
+
+
+Exit:
